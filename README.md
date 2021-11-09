@@ -1,7 +1,7 @@
 # Sentiment-Analyzer
 Update download.sh so that it works on the link in the file
 
-**Plan**
+## Plan
 Dataset to use is Sentiment140, 1.6 million tweets each tagged with a sentiment 0-4
 
 Stages (Do not need to complete all, especially last 3)
