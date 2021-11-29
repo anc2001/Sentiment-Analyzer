@@ -4,6 +4,11 @@ from preprocess import get_data
 from lstm_model import LSTM_Model
 import hyperparameters as hp
 
+'''
+Trains the model, shuffles and batches the data feeding to network and backpropagates
+    train_data - (TRAINING_SIZE, ) size array where each index is a string 
+    train_labels - (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
+'''
 def train(model, train_inputs, train_labels):
     optimizer = tf.keras.optimizers.Adam(hp.LEARNING_RATE)
 
@@ -32,6 +37,11 @@ def train(model, train_inputs, train_labels):
         end += hp.BATCH_SIZE
     return None
 
+'''
+Tests the model
+    test_data - (TESTING_SIZE, ) size array where each index is a string 
+    test_labels -  (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
+'''
 def test(model, test_inputs, test_labels):
     #For batching, but as is 
 

@@ -17,15 +17,26 @@ class LSTM_Model(tf.keras.Model):
         ])
         pass
 
+    '''
+    Does one forward pass
+        sentences - (BATCH_SIZE, ) of strings
+    '''
     def call(self, sentences):
         return self.thing(sentences)
 
+    '''
+    Calculates the accuracy of the given logits and labels
+        logits - (BATCH_SIZE, NUM_CLASSES) of logits 
+        labels - (BATCH_SIZE, NUM_CLASSES) of one hot vectors for ground truth
+    '''
     def accuracy_function(self, logits, labels):
         correct_predictions = tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
         return tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
-    """
+    '''
     Calculates the model cross-entropy loss for one forward pass 
-    """
+        logits - (BATCH_SIZE, NUM_CLASSES) of logits 
+        labels - (BATCH_SIZE, NUM_CLASSES) of one hot vectors for ground truth
+    '''
     def loss_function(self, logits, labels):
         return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, logits))

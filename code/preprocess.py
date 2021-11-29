@@ -11,11 +11,11 @@ Function to preprocess data
 train_file - path to the training data
 test_file - path to testing data
 return:
-    training - list of (sentence->string, sentiment->int) tuples where setence is a list of integers
-    validation - ditto
-    testing - ditto
-    vocab - list of strings of length VOCAB_SIZE, starts with padding and UNK
-    vocab - a dictionary mapping words to unique IDs
+    train_data - (TRAINING_SIZE, ) size array where each index is a string 
+    train_labels - (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
+    test_data - (TESTING_SIZE, ) size array where each index is a string 
+    test_labels -  (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
+    encoder - a tf.keras.layers.TextVectorization layer that contains the vocabulary
 '''
 def get_data(train_path, test_path):
     n = 1600000
@@ -32,6 +32,7 @@ def get_data(train_path, test_path):
     encoder.adapt(train_df[5])
 
     train_data = np.array(train_df[5])
+    print(train_data[:5])
     train_labels = tf.one_hot(train_df[0], hp.NUM_CLASSES).numpy()
     test_data = np.array(test_df[5])
     test_labels = tf.one_hot(test_df[0], hp.NUM_CLASSES).numpy()
