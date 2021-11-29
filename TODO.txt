@@ -1,0 +1,4 @@
+1. Add loss graph visualization 
+2. Add some way to see the text inputted and what it is being classified as
+3. Tune hyperparameters (we're grossly overfitting)
+4. Add some way to save model weights/checkpoints and load as REPL

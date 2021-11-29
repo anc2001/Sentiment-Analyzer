@@ -1,2 +1,14 @@
+EPOCHS = 1
+
+LEARNING_RATE = 0.003
+
+BATCH_SIZE = 300
+
+EMBEDDING_SIZE = 128
 
 VOCAB_SIZE = 1000
+
+TRAINING_SIZE = 100000
+
+#Do not change unless changing dataset
+NUM_CLASSES = 5

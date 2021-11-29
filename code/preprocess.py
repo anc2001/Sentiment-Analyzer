@@ -20,23 +20,23 @@ return:
 def get_data(train_path, test_path):
     n = 1600000
     # Number of rows from the training data to take
-    size = 100000
+    size = hp.TRAINING_SIZE
     skip = sorted(random.sample(range(n),n-size))
 
     # Reading the csv data, taking only columns 0 and 5
     train_df = pd.read_csv(train_path, header=None, usecols=[0, 5], encoding='latin-1', skiprows=skip)
     test_df = pd.read_csv(test_path, header=None, usecols=[0, 5], encoding='latin-1')
 
-    # Text vectorization 
+    # Text vectorization - abstracts away having to create a vocabulary and turning text into indices
     encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
     encoder.adapt(train_df[5])
-    vocab = np.array(encoder.get_vocabulary())
-    training = encoder(train_df[5]).numpy()
-    training = [(sentence, train_df[0][i]) for i, sentence in enumerate(training)]
-    testing = encoder(test_df[5]).numpy()
-    testing = [(sentence, test_df[0][i]) for i, sentence in enumerate(testing)]
 
-    return (training, testing, vocab)
+    train_data = np.array(train_df[5])
+    train_labels = tf.one_hot(train_df[0], hp.NUM_CLASSES).numpy()
+    test_data = np.array(test_df[5])
+    test_labels = tf.one_hot(test_df[0], hp.NUM_CLASSES).numpy()
+
+    return (train_data, train_labels, test_data, test_labels, encoder)
 
 if __name__ == "__main__":
-    get_data("../data/training.1600000.processed.noemoticon.csv", "../data/testdata.manual.2009.06.14.csv")
+    get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
