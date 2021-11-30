@@ -15,6 +15,7 @@ class LSTM_Model(tf.keras.Model):
             tf.keras.layers.Dropout(0.5),
             tf.keras.layers.Dense(hp.NUM_CLASSES),
         ])
+        self.loss_visualization = []
         pass
 
     '''

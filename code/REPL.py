@@ -1,11 +1,16 @@
-    
+from main import get_rating
+from tensorflow.keras.models import load_model
+
 def main():
     try:
+        model = load_model('models/model_save.h5')
         while True:
             try:
                 _in = input(">> ")
                 try:
-                    print(eval(_in))
+                    rating = get_rating(model,_in)
+                    text = '\n Rating: ' + rating
+                    print(text)
                 except:
                     out = exec(_in)
                     if out != None:

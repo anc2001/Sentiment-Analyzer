@@ -3,6 +3,8 @@ import numpy as np
 from preprocess import get_data
 from lstm_model import LSTM_Model
 import hyperparameters as hp
+from matplotlib import pyplot as plt
+import os.path
 
 '''
 Trains the model, shuffles and batches the data feeding to network and backpropagates
@@ -11,7 +13,6 @@ Trains the model, shuffles and batches the data feeding to network and backpropa
 '''
 def train(model, train_inputs, train_labels):
     optimizer = tf.keras.optimizers.Adam(hp.LEARNING_RATE)
-
     # Shuffle arrays
     indices = range(train_labels.shape[0])
     indices = tf.random.shuffle(indices)
@@ -26,6 +27,7 @@ def train(model, train_inputs, train_labels):
         with tf.GradientTape() as tape:
             probs = model(batch_inputs)
             loss = model.loss_function(probs, batch_labels)
+            model.loss_visualization.append(loss)
             accuracy = model.accuracy_function(probs, batch_labels)
             if start % 10000 == 0:
                 print("Accuracy: ", accuracy.numpy())
@@ -62,6 +64,42 @@ def test(model, test_inputs, test_labels):
     accuracy = model.accuracy_function(probs, test_labels).numpy()
     return accuracy
 
+def visualize_loss(losses): 
+    """
+    Uses Matplotlib to visualize the losses of our model.
+    :param losses: list of loss data stored from train. Can use the model's loss_list 
+    field 
+
+    NOTE: DO NOT EDIT
+
+    :return: doesn't return anything, a plot should pop-up 
+    """
+    x = [i for i in range(len(losses))]
+    plt.plot(x, losses)
+    plt.title('Loss per batch')
+    plt.xlabel('Batch')
+    plt.ylabel('Loss')
+    plt.show()  
+
+def visualize_analysis(model,text):
+    rating = get_rating(model, text)
+    text += '\n \n Rating: ' + rating
+    plt.text(.5,.5,text, bbox={'facecolor':'white','alpha':1,'edgecolor':'none','pad':1},ha='center', va='center') 
+    ax = plt.gca()
+    ax.axes.xaxis.set_visible(False)
+    ax.axes.yaxis.set_visible(False)
+    plt.grid(True)
+    plt.show()
+    pass
+
+def get_rating(text):
+    #Need to put saved model here. 
+    data = np.array(text)
+    logits = model.call(data)
+    rating = tf.argmax(logits, 1)
+    return rating
+
+
 def main():
     (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
     model = LSTM_Model(encoder)
@@ -69,6 +107,9 @@ def main():
         train(model, train_data, train_labels)
         accuracy = test(model, test_data, test_labels)
         print("Epoch accuracy:", accuracy)
+    visualize_loss(model.loss_visualization)
+    if os.path.isfile('models/model_save.h5') is False:
+        model.save('models/model_save.h5')
 
 if __name__ == '__main__':
 	main()
