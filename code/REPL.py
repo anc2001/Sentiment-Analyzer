@@ -12,15 +12,12 @@ def main():
         temp = np.array(["huh"])
         _ = model(temp)
         model = load_weights(model, "checkpoint")
-        rating = get_rating(model,"Test")
-        print(rating.numpy())
         while True:
             try:
                 _in = input(">> ")
                 if _in == "exit":
                     exit()
                 try:
-                    print(_in)
                     rating = get_rating(model,_in)
                     text = '\n Rating: '
                     print('{}{}'.format(text, rating.numpy()[0]))

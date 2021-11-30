@@ -32,9 +32,11 @@ def get_data(train_path, test_path):
     encoder.adapt(train_df[5])
 
     train_data = np.array(train_df[5])
-    train_labels = tf.one_hot(train_df[0], hp.NUM_CLASSES).numpy()
+    train_labels = np.array(train_df[0]) / 2
+    train_labels = tf.one_hot(train_labels, hp.NUM_CLASSES).numpy()
     test_data = np.array(test_df[5])
-    test_labels = tf.one_hot(test_df[0], hp.NUM_CLASSES).numpy()
+    test_labels = np.array(test_df[0]) / 2
+    test_labels = tf.one_hot(test_labels, hp.NUM_CLASSES).numpy()
 
     return (train_data, train_labels, test_data, test_labels, encoder)
 
