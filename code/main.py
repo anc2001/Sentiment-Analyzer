@@ -92,13 +92,23 @@ def visualize_analysis(model,text):
     plt.show()
     pass
 
-def get_rating(text):
-    #Need to put saved model here. 
-    data = np.array(text)
+def get_rating(model, text):
+    data = np.array([text])
     logits = model.call(data)
     rating = tf.argmax(logits, 1)
     return rating
 
+def load_weights(model, name):
+    weights_path = os.path.join("model_ckpts", name, name)
+    model.load_weights(weights_path)
+    return model
+
+def save_weights(model, name):
+    output_dir = os.path.join("model_ckpts", name)
+    output_path = os.path.join(output_dir, name)
+    os.makedirs("model_ckpts", exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    model.save_weights(output_path)
 
 def main():
     (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
@@ -108,8 +118,9 @@ def main():
         accuracy = test(model, test_data, test_labels)
         print("Epoch accuracy:", accuracy)
     visualize_loss(model.loss_visualization)
-    if os.path.isfile('models/model_save.h5') is False:
-        model.save('models/model_save.h5')
+
+    #This should be abstracted later 
+    save_weights(model, "checkpoint")
 
 if __name__ == '__main__':
 	main()

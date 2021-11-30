@@ -16,7 +16,6 @@ class LSTM_Model(tf.keras.Model):
             tf.keras.layers.Dense(hp.NUM_CLASSES),
         ])
         self.loss_visualization = []
-        pass
 
     '''
     Does one forward pass

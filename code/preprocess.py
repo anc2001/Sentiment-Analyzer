@@ -32,7 +32,6 @@ def get_data(train_path, test_path):
     encoder.adapt(train_df[5])
 
     train_data = np.array(train_df[5])
-    print(train_data[:5])
     train_labels = tf.one_hot(train_df[0], hp.NUM_CLASSES).numpy()
     test_data = np.array(test_df[5])
     test_labels = tf.one_hot(test_df[0], hp.NUM_CLASSES).numpy()

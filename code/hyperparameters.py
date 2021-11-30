@@ -8,7 +8,7 @@ EMBEDDING_SIZE = 128
 
 VOCAB_SIZE = 1000
 
-TRAINING_SIZE = 100000
+TRAINING_SIZE = 400000
 
 #Do not change unless changing dataset
 NUM_CLASSES = 5
