@@ -22,8 +22,8 @@ def main():
                 try:
                     print(_in)
                     rating = get_rating(model,_in)
-                    text = '\n Rating: ' + rating
-                    print(text)
+                    text = '\n Rating: '
+                    print('{}{}'.format(text, rating.numpy()[0]))
                 except:
                     out = exec(_in)
                     if out != None:
