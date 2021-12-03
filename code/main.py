@@ -112,7 +112,8 @@ def save_weights(model, name):
     model.save_weights(output_path)
 
 def main():
-    (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
+    # (train_data, train_labels, test_data, test_labels, encoder) = get_data("training.1600000.processed.noemoticon.csv", "testdata.manual.2009.06.14.csv")
+    (train_data, train_labels, test_data, test_labels, encoder) = get_data("train_preprocessed.csv", "test_preprocessed.csv")
     model = LSTM_Model(encoder)
     for i in range(hp.EPOCHS):
         train(model, train_data, train_labels)

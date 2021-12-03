@@ -6,9 +6,12 @@ BATCH_SIZE = 300
 
 EMBEDDING_SIZE = 128
 
-VOCAB_SIZE = 1000
+VOCAB_SIZE = 2000
 
 TRAINING_SIZE = 400000
 
 #Do not change unless changing dataset
 NUM_CLASSES = 3
+
+LABEL_IDX = 0
+TWEET_IDX = 1

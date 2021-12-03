@@ -24,18 +24,18 @@ def get_data(train_path, test_path):
     skip = sorted(random.sample(range(n),n-size))
 
     # Reading the csv data, taking only columns 0 and 5
-    train_df = pd.read_csv(train_path, header=None, usecols=[0, 5], encoding='latin-1', skiprows=skip)
-    test_df = pd.read_csv(test_path, header=None, usecols=[0, 5], encoding='latin-1')
+    train_df = pd.read_csv(train_path, header=None, usecols=[hp.LABEL_IDX, hp.TWEET_IDX], encoding='latin-1', skiprows=skip)
+    test_df = pd.read_csv(test_path, header=None, usecols=[hp.LABEL_IDX, hp.TWEET_IDX], encoding='latin-1')
 
     # Text vectorization - abstracts away having to create a vocabulary and turning text into indices
     encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
-    encoder.adapt(train_df[5])
+    encoder.adapt(train_df[hp.TWEET_IDX])
 
-    train_data = np.array(train_df[5])
-    train_labels = np.array(train_df[0]) / 2
+    train_data = np.array(train_df[hp.TWEET_IDX])
+    train_labels = np.array(train_df[hp.LABEL_IDX]) / 2
     train_labels = tf.one_hot(train_labels, hp.NUM_CLASSES).numpy()
-    test_data = np.array(test_df[5])
-    test_labels = np.array(test_df[0]) / 2
+    test_data = np.array(test_df[hp.TWEET_IDX])
+    test_labels = np.array(test_df[hp.LABEL_IDX]) / 2
     test_labels = tf.one_hot(test_labels, hp.NUM_CLASSES).numpy()
 
     return (train_data, train_labels, test_data, test_labels, encoder)

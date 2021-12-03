@@ -4,13 +4,12 @@ import tensorflow as tf
 import hyperparameters as hp
 from preprocess import get_data
 import numpy as np
+import stemming
 
 def main():
     try:
-        (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
+        (train_data, train_labels, test_data, test_labels, encoder) = get_data("train_preprocessed.csv", "test_preprocessed.csv")
         model = LSTM_Model(encoder)
-        temp = np.array(["huh"])
-        _ = model(temp)
         model = load_weights(model, "checkpoint")
         while True:
             try:
@@ -18,9 +17,13 @@ def main():
                 if _in == "exit":
                     exit()
                 try:
-                    rating = get_rating(model,_in)
-                    text = '\n Rating: '
-                    print('{}{}'.format(text, rating.numpy()[0]))
+                    sentence = stemming.create_sentence(_in)
+                    if (len(sentence)) != 0:
+                        rating = get_rating(model,sentence)
+                        text = '\n Rating: '
+                        print('{}{}'.format(text, rating.numpy()[0]))
+                    else:
+                        print("Not enough info!")
                 except:
                     out = exec(_in)
                     if out != None:
