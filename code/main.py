@@ -1,10 +1,19 @@
+import argparse
 import tensorflow as tf
 import numpy as np
 from preprocess import get_data, load_tfds_imdb
-from lstm_model import LSTM_Model, get_lstm_model
+from lstm_model import LSTM_Model
 import hyperparameters as hp
 from matplotlib import pyplot as plt
 import os.path
+import pickle
+
+def parseArguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, default="imdb")
+    parser.add_argument("--model_type", type=str, default="lstm")
+    args = parser.parse_args()
+    return args
 
 '''
 Trains the model, shuffles and batches the data feeding to network and backpropagates
@@ -101,6 +110,9 @@ def get_rating(model, text):
 
 def load_weights(model, name):
     weights_path = os.path.join("model_ckpts", name, name)
+    sample_text = ('The movie was cool. The animation and the graphics '
+               'were out of this world. I would recommend this movie.')
+    _ = model(np.array([sample_text]))
     model.load_weights(weights_path)
     return model
 
@@ -110,6 +122,19 @@ def save_weights(model, name):
     os.makedirs("model_ckpts", exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
     model.save_weights(output_path)
+
+def save_encoder(encoder, name):
+    pickle.dump({'config': encoder.get_config(),
+             'weights': encoder.get_weights()}
+            , open(name, "wb"))
+    return None
+
+def load_encoder(name):
+    from_disk = pickle.load(open(name, "rb"))
+    new_encoder = tf.keras.layers.TextVectorization.from_config(from_disk['config'])
+    new_encoder.adapt(tf.data.Dataset.from_tensor_slices(["xyz"]))
+    new_encoder.set_weights(from_disk['weights'])
+    return new_encoder
 
 def plot_graphs(history, metric):
   plt.plot(history.history[metric])
@@ -130,16 +155,16 @@ def plot_graphs(history, metric):
 #     #This should be abstracted later 
 #     save_weights(model, "checkpoint")
 
-def main():
+def main(args):
     (train_dataset, test_dataset, encoder) = load_tfds_imdb()
-    model = get_lstm_model(encoder)
-    model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+    model = LSTM_Model(encoder)
+    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
               optimizer=tf.keras.optimizers.Adam(1e-4),
               metrics=['accuracy'])
-    history = model.fit(train_dataset, epochs=hp.EPOCHS,
+    history = model.model.fit(train_dataset, epochs=hp.EPOCHS,
                     validation_data=test_dataset,
                     validation_steps=30)
-    test_loss, test_acc = model.evaluate(test_dataset)
+    test_loss, test_acc = model.model.evaluate(test_dataset)
 
     print('Test Loss:', test_loss)
     print('Test Accuracy:', test_acc)
@@ -153,7 +178,9 @@ def main():
     plt.ylim(0, None)
     plt.savefig("figure.png")
 
-    model.save("lstm_model")
+    save_encoder(encoder, "encoder.pkl")
+    save_weights(model, "checkpoint")
 
 if __name__ == '__main__':
-	main()
+    args = parseArguments
+    main(args)
