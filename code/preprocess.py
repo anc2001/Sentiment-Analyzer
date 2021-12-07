@@ -5,6 +5,7 @@ import pandas as pd
 import random
 import hyperparameters as hp
 import tensorflow as tf
+import tensorflow_datasets as tfds
 
 '''
 Function to preprocess data
@@ -17,7 +18,7 @@ return:
     test_labels -  (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
     encoder - a tf.keras.layers.TextVectorization layer that contains the vocabulary
 '''
-def get_data(train_path, test_path):
+def get_data(train_path, test_path, model_encoder=None):
     n = 1600000
     # Number of rows from the training data to take
     size = hp.TRAINING_SIZE
@@ -28,7 +29,11 @@ def get_data(train_path, test_path):
     test_df = pd.read_csv(test_path, header=None, usecols=[0, 5], encoding='latin-1')
 
     # Text vectorization - abstracts away having to create a vocabulary and turning text into indices
-    encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
+    encoder = None
+    if model_encoder:
+        encoder = model_encoder
+    else:
+        encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
     encoder.adapt(train_df[5])
 
     train_data = np.array(train_df[5])
@@ -39,6 +44,22 @@ def get_data(train_path, test_path):
     test_labels = tf.one_hot(test_labels, hp.NUM_CLASSES).numpy()
 
     return (train_data, train_labels, test_data, test_labels, encoder)
+
+def load_tfds_imdb(model_encoder=None):
+    dataset, info = tfds.load('imdb_reviews', with_info=True, as_supervised=True)
+    train_dataset, test_dataset = dataset['train'], dataset['test']
+    train_dataset = train_dataset.shuffle(hp.BUFFER_SIZE).batch(hp.BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+    test_dataset = test_dataset.batch(hp.BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+
+    encoder = None
+    if model_encoder:
+        encoder = model_encoder
+    else:
+        encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
+    encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
+    encoder.adapt(train_dataset.map(lambda text, label: text))
+
+    return (train_dataset, test_dataset, encoder)
 
 if __name__ == "__main__":
     get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")

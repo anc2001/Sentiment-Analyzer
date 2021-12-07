@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
-from preprocess import get_data
-from lstm_model import LSTM_Model
+from preprocess import get_data, load_tfds_imdb
+from lstm_model import LSTM_Model, get_lstm_model
 import hyperparameters as hp
 from matplotlib import pyplot as plt
 import os.path
@@ -111,17 +111,49 @@ def save_weights(model, name):
     os.makedirs(output_dir, exist_ok=True)
     model.save_weights(output_path)
 
-def main():
-    (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
-    model = LSTM_Model(encoder)
-    for i in range(hp.EPOCHS):
-        train(model, train_data, train_labels)
-        accuracy = test(model, test_data, test_labels)
-        print("Epoch accuracy:", accuracy)
-    visualize_loss(model.loss_visualization)
+def plot_graphs(history, metric):
+  plt.plot(history.history[metric])
+  plt.plot(history.history['val_'+metric], '')
+  plt.xlabel("Epochs")
+  plt.ylabel(metric)
+  plt.legend([metric, 'val_'+metric])
 
-    #This should be abstracted later 
-    save_weights(model, "checkpoint")
+# def main():
+#     (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
+#     model = LSTM_Model(encoder)
+#     for i in range(hp.EPOCHS):
+#         train(model, train_data, train_labels)
+#         accuracy = test(model, test_data, test_labels)
+#         print("Epoch accuracy:", accuracy)
+#     visualize_loss(model.loss_visualization)
+
+#     #This should be abstracted later 
+#     save_weights(model, "checkpoint")
+
+def main():
+    (train_dataset, test_dataset, encoder) = load_tfds_imdb()
+    model = get_lstm_model(encoder)
+    model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.Adam(1e-4),
+              metrics=['accuracy'])
+    history = model.fit(train_dataset, epochs=hp.EPOCHS,
+                    validation_data=test_dataset,
+                    validation_steps=30)
+    test_loss, test_acc = model.evaluate(test_dataset)
+
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+
+    plt.figure(figsize=(16, 8))
+    plt.subplot(1, 2, 1)
+    plot_graphs(history, 'accuracy')
+    plt.ylim(None, 1)
+    plt.subplot(1, 2, 2)
+    plot_graphs(history, 'loss')
+    plt.ylim(0, None)
+    plt.savefig("figure.png")
+
+    model.save("lstm_model")
 
 if __name__ == '__main__':
 	main()

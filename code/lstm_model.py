@@ -3,10 +3,22 @@ import numpy as np
 import hyperparameters as hp
 from tensorflow.python.ops.embedding_ops import embedding_lookup_sparse
 
+def get_lstm_model(encoder):
+    model = tf.keras.Sequential([
+            encoder,
+            tf.keras.layers.Embedding(hp.VOCAB_SIZE, hp.EMBEDDING_SIZE, mask_zero=True),
+            tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64,  return_sequences=True)),
+            tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)),
+            tf.keras.layers.Dense(64, activation='relu'),
+            tf.keras.layers.Dropout(0.5),
+            tf.keras.layers.Dense(hp.NUM_CLASSES),
+        ])
+    return model
+
 class LSTM_Model(tf.keras.Model):
     def __init__(self, encoder):
         super(LSTM_Model, self).__init__()
-        self.thing = tf.keras.Sequential([
+        self.model = tf.keras.Sequential([
             encoder,
             tf.keras.layers.Embedding(hp.VOCAB_SIZE, hp.EMBEDDING_SIZE, mask_zero=True),
             tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64,  return_sequences=True)),
@@ -22,7 +34,7 @@ class LSTM_Model(tf.keras.Model):
         sentences - (BATCH_SIZE, ) of strings
     '''
     def call(self, sentences):
-        return self.thing(sentences)
+        return self.model(sentences)
 
     '''
     Calculates the accuracy of the given logits and labels
