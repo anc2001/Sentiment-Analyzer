@@ -1,10 +1,19 @@
+import argparse
 import tensorflow as tf
 import numpy as np
-from preprocess import get_data
+from preprocess import get_data, load_tfds_imdb
 from lstm_model import LSTM_Model
 import hyperparameters as hp
 from matplotlib import pyplot as plt
 import os.path
+import pickle
+
+def parseArguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, default="imdb")
+    parser.add_argument("--model_type", type=str, default="lstm")
+    args = parser.parse_args()
+    return args
 
 '''
 Trains the model, shuffles and batches the data feeding to network and backpropagates
@@ -101,6 +110,9 @@ def get_rating(model, text):
 
 def load_weights(model, name):
     weights_path = os.path.join("model_ckpts", name, name)
+    sample_text = ('The movie was cool. The animation and the graphics '
+               'were out of this world. I would recommend this movie.')
+    _ = model(np.array([sample_text]))
     model.load_weights(weights_path)
     return model
 
@@ -111,17 +123,64 @@ def save_weights(model, name):
     os.makedirs(output_dir, exist_ok=True)
     model.save_weights(output_path)
 
-def main():
-    (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
-    model = LSTM_Model(encoder)
-    for i in range(hp.EPOCHS):
-        train(model, train_data, train_labels)
-        accuracy = test(model, test_data, test_labels)
-        print("Epoch accuracy:", accuracy)
-    visualize_loss(model.loss_visualization)
+def save_encoder(encoder, name):
+    pickle.dump({'config': encoder.get_config(),
+             'weights': encoder.get_weights()}
+            , open(name, "wb"))
+    return None
 
-    #This should be abstracted later 
+def load_encoder(name):
+    from_disk = pickle.load(open(name, "rb"))
+    new_encoder = tf.keras.layers.TextVectorization.from_config(from_disk['config'])
+    new_encoder.adapt(tf.data.Dataset.from_tensor_slices(["xyz"]))
+    new_encoder.set_weights(from_disk['weights'])
+    return new_encoder
+
+def plot_graphs(history, metric):
+  plt.plot(history.history[metric])
+  plt.plot(history.history['val_'+metric], '')
+  plt.xlabel("Epochs")
+  plt.ylabel(metric)
+  plt.legend([metric, 'val_'+metric])
+
+# def main():
+#     (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
+#     model = LSTM_Model(encoder)
+#     for i in range(hp.EPOCHS):
+#         train(model, train_data, train_labels)
+#         accuracy = test(model, test_data, test_labels)
+#         print("Epoch accuracy:", accuracy)
+#     visualize_loss(model.loss_visualization)
+
+#     #This should be abstracted later 
+#     save_weights(model, "checkpoint")
+
+def main(args):
+    (train_dataset, test_dataset, encoder) = load_tfds_imdb()
+    model = LSTM_Model(encoder)
+    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.Adam(1e-4),
+              metrics=['accuracy'])
+    history = model.model.fit(train_dataset, epochs=hp.EPOCHS,
+                    validation_data=test_dataset,
+                    validation_steps=30)
+    test_loss, test_acc = model.model.evaluate(test_dataset)
+
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+
+    plt.figure(figsize=(16, 8))
+    plt.subplot(1, 2, 1)
+    plot_graphs(history, 'accuracy')
+    plt.ylim(None, 1)
+    plt.subplot(1, 2, 2)
+    plot_graphs(history, 'loss')
+    plt.ylim(0, None)
+    plt.savefig("figure.png")
+
+    save_encoder(encoder, "encoder.pkl")
     save_weights(model, "checkpoint")
 
 if __name__ == '__main__':
-	main()
+    args = parseArguments
+    main(args)
