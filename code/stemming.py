@@ -74,5 +74,6 @@ def preprocess(train_path, test_path, train_csv, test_csv):
     print(end - start)
     print("Done!")
 
+# Only works with Sentiment 140 dataset
 if __name__ == "__main__":
     preprocess("training.1600000.processed.noemoticon.csv", "testdata.manual.2009.06.14.csv", "train_preprocessed.csv", "test_preprocessed.csv")
