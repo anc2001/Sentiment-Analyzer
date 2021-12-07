@@ -5,6 +5,7 @@ import hyperparameters as hp
 from preprocess import get_data
 from main import load_encoder
 import numpy as np
+import stemming
 
 def main():
     try:
