@@ -1,0 +1,13 @@
+IMDB:
+Test Loss: 0.32179391384124756
+Test Accuracy: 0.860480010509491
+
+Note that this iteration has some overfitting happening - can do better by reducing some hyper parameters 
+
+Twitter: 
+Test Loss: 0.4225425124168396
+Test Accuracy: 0.7877600193023682
+
+Sarcasm: 
+Test Loss: 0.41553163528442383
+Test Accuracy: 0.7981600165367126

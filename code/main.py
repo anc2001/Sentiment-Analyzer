@@ -1,7 +1,7 @@
 import argparse
 import tensorflow as tf
 import numpy as np
-from preprocess import get_data, load_tfds_imdb
+from preprocess import get_twitter_data, get_imdb_data, get_sarcasm_data
 from lstm_model import LSTM_Model
 import hyperparameters as hp
 from matplotlib import pyplot as plt
@@ -10,86 +10,11 @@ import pickle
 
 def parseArguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="imdb")
+    #Options are imdb, sentiment140
+    parser.add_argument("--type", type=str, choices=["imdb", "twitter", "sarcasm", "twitter_sarcasm"], default="imdb") 
     parser.add_argument("--model_type", type=str, default="lstm")
     args = parser.parse_args()
-    return args
-
-'''
-Trains the model, shuffles and batches the data feeding to network and backpropagates
-    train_data - (TRAINING_SIZE, ) size array where each index is a string 
-    train_labels - (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
-'''
-def train(model, train_inputs, train_labels):
-    optimizer = tf.keras.optimizers.Adam(hp.LEARNING_RATE)
-    # Shuffle arrays
-    indices = range(train_labels.shape[0])
-    indices = tf.random.shuffle(indices)
-    inputs = tf.gather(train_inputs, indices)
-    labels = tf.gather(train_labels, indices)
-
-    start = 0
-    end = hp.BATCH_SIZE
-    while end <= train_labels.shape[0]:
-        batch_inputs = inputs[start:end]
-        batch_labels = labels[start:end]
-        with tf.GradientTape() as tape:
-            probs = model(batch_inputs)
-            loss = model.loss_function(probs, batch_labels)
-            model.loss_visualization.append(loss)
-            accuracy = model.accuracy_function(probs, batch_labels)
-            if start % 10000 == 0:
-                print("Accuracy: ", accuracy.numpy())
-                print("Loss: ", loss.numpy())
-        
-        gradients = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        start = end
-        end += hp.BATCH_SIZE
-    return None
-
-'''
-Tests the model
-    test_data - (TESTING_SIZE, ) size array where each index is a string 
-    test_labels -  (TRAINING_SIZE, NUM_CLASSES) of one hot vectors representing the sentiment 
-'''
-def test(model, test_inputs, test_labels):
-    #For batching, but as is 
-
-    # start = 0
-    # end = hp.BATCH_SIZE
-    # accum = []
-    # print(test_labels.shape[0])
-    # while end <= test_labels.shape[0]:
-    #     batch_inputs = test_inputs[start:end]
-    #     batch_labels = test_labels[start:end]
-    #     probs = model(batch_inputs)
-    #     accuracy = model.accuracy_function(probs, batch_labels).numpy()
-    #     accum.append(accuracy)
-    #     start = end
-    #     end += hp.BATCH_SIZE
-    
-    probs = model(test_inputs)
-    accuracy = model.accuracy_function(probs, test_labels).numpy()
-    return accuracy
-
-def visualize_loss(losses): 
-    """
-    Uses Matplotlib to visualize the losses of our model.
-    :param losses: list of loss data stored from train. Can use the model's loss_list 
-    field 
-
-    NOTE: DO NOT EDIT
-
-    :return: doesn't return anything, a plot should pop-up 
-    """
-    x = [i for i in range(len(losses))]
-    plt.plot(x, losses)
-    plt.title('Loss per batch')
-    plt.xlabel('Batch')
-    plt.ylabel('Loss')
-    plt.savefig("loss.png")
-    plt.show()  
+    return args 
 
 def visualize_analysis(model,text):
     rating = get_rating(model, text)
@@ -108,6 +33,13 @@ def get_rating(model, text):
     rating = tf.argmax(logits, 1)
     return rating
 
+def save_weights(model, name):
+    output_dir = os.path.join("model_ckpts", name)
+    output_path = os.path.join(output_dir, name)
+    os.makedirs("model_ckpts", exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    model.save_weights(output_path)
+
 def load_weights(model, name):
     weights_path = os.path.join("model_ckpts", name, name)
     sample_text = ('The movie was cool. The animation and the graphics '
@@ -115,13 +47,6 @@ def load_weights(model, name):
     _ = model(np.array([sample_text]))
     model.load_weights(weights_path)
     return model
-
-def save_weights(model, name):
-    output_dir = os.path.join("model_ckpts", name)
-    output_path = os.path.join(output_dir, name)
-    os.makedirs("model_ckpts", exist_ok=True)
-    os.makedirs(output_dir, exist_ok=True)
-    model.save_weights(output_path)
 
 def save_encoder(encoder, name):
     pickle.dump({'config': encoder.get_config(),
@@ -137,38 +62,13 @@ def load_encoder(name):
     return new_encoder
 
 def plot_graphs(history, metric):
-  plt.plot(history.history[metric])
-  plt.plot(history.history['val_'+metric], '')
-  plt.xlabel("Epochs")
-  plt.ylabel(metric)
-  plt.legend([metric, 'val_'+metric])
+    plt.plot(history.history[metric])
+    plt.plot(history.history['val_'+metric], '')
+    plt.xlabel("Epochs")
+    plt.ylabel(metric)
+    plt.legend([metric, 'val_'+metric])
 
-# def main():
-#     (train_data, train_labels, test_data, test_labels, encoder) = get_data("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv")
-#     model = LSTM_Model(encoder)
-#     for i in range(hp.EPOCHS):
-#         train(model, train_data, train_labels)
-#         accuracy = test(model, test_data, test_labels)
-#         print("Epoch accuracy:", accuracy)
-#     visualize_loss(model.loss_visualization)
-
-#     #This should be abstracted later 
-#     save_weights(model, "checkpoint")
-
-def main(args):
-    (train_dataset, test_dataset, encoder) = load_tfds_imdb()
-    model = LSTM_Model(encoder)
-    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-              optimizer=tf.keras.optimizers.Adam(1e-4),
-              metrics=['accuracy'])
-    history = model.model.fit(train_dataset, epochs=hp.EPOCHS,
-                    validation_data=test_dataset,
-                    validation_steps=30)
-    test_loss, test_acc = model.model.evaluate(test_dataset)
-
-    print('Test Loss:', test_loss)
-    print('Test Accuracy:', test_acc)
-
+def visualize_training(history, name):
     plt.figure(figsize=(16, 8))
     plt.subplot(1, 2, 1)
     plot_graphs(history, 'accuracy')
@@ -176,11 +76,65 @@ def main(args):
     plt.subplot(1, 2, 2)
     plot_graphs(history, 'loss')
     plt.ylim(0, None)
-    plt.savefig("figure.png")
+    plt.savefig(name)
 
-    save_encoder(encoder, "encoder.pkl")
-    save_weights(model, "checkpoint")
+def train_imdb():
+    (train_dataset, test_dataset, encoder) = get_imdb_data()
+    validation_dataset = test_dataset
+    model = LSTM_Model(encoder)
+    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            optimizer=tf.keras.optimizers.Adam(1e-4),
+            metrics=['accuracy'])
+    history = model.model.fit(train_dataset, epochs=hp.EPOCHS,
+                    validation_data=validation_dataset,
+                    validation_steps=30)
+    test_loss, test_acc = model.model.evaluate(test_dataset)
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+    visualize_training(history, "imdb_dataset.png")
+    save_encoder(encoder, "imdb_encoder.pkl")
+    save_weights(model, "imdb")
+
+def train_twitter():
+    (train_data, train_label, test_data, test_label, validation, encoder) = get_twitter_data()
+    model = LSTM_Model(encoder)
+    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            optimizer=tf.keras.optimizers.Adam(1e-4),
+            metrics=['accuracy'])  
+    history = model.model.fit(train_data, train_label, epochs=hp.EPOCHS, batch_size=hp.BATCH_SIZE,
+            validation_data=validation,
+            validation_steps=30)    
+    test_loss, test_acc = model.model.evaluate(test_data, test_label)
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+    visualize_training(history, "twitter_dataset.png")
+    save_encoder(encoder, "twitter_encoder.pkl")
+    save_weights(model, "twitter")
+
+def train_sarcasm():
+    (train_data, train_label, test_data, test_label, validation, encoder) = get_twitter_data()
+    model = LSTM_Model(encoder)
+    model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            optimizer=tf.keras.optimizers.Adam(1e-4),
+            metrics=['accuracy'])  
+    history = model.model.fit(train_data, train_label, epochs=hp.EPOCHS, batch_size=hp.BATCH_SIZE,
+            validation_data=validation,
+            validation_steps=30)    
+    test_loss, test_acc = model.model.evaluate(test_data, test_label)
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+    visualize_training(history, "sarcasm_dataset.png")
+    save_encoder(encoder, "sarcasm_encoder.pkl")
+    save_weights(model, "sarcasm")
+
+def main(args):
+    if args.type == "imdb":
+        train_imdb()
+    elif args.type == "twitter":
+        train_twitter()
+    elif args.type == "sarcasm":
+        train_sarcasm()
 
 if __name__ == '__main__':
-    args = parseArguments
+    args = parseArguments()
     main(args)
