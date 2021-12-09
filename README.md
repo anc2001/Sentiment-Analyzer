@@ -7,7 +7,9 @@ Different models to train
 - Twitter Sentiment140 based sentiment analysis (either positive or negative) 
     - Run with option flag '--type twitter'
 - Twitter sarcasm detection (either sarcastic or not)
-    - Run with option flag '--type sarcasm'    
+    - Run with option flag '--type sarcasm' 
+- Run Sentiment and Sarcasm models in tandem fine tuning both models
+    - Run with option flag '--type together'
 
 Ways to run repl
 - Pure sarcasm detection 

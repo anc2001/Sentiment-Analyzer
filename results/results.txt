@@ -11,3 +11,131 @@ Test Accuracy: 0.7877600193023682
 Sarcasm: 
 Test Loss: 0.41553163528442383
 Test Accuracy: 0.7981600165367126
+
+If the prediction is >= 0.0, it is positive else it is negative.
+Sarcasm only applied if value is sarcasm value is >= 0
+
+	IMDB dataset with Sarcasm
+ 
+>> I'm really in love with the characters in this movie. It's amazing what the director was able to do with the cinematic design. Truly revolutionary. 
+
+ Sentiment Rating: [1.4750674]
+
+ Sarcasm Rating: [2.3260448]
+
+ Sentiment rating after Sarcasm Detection: [-3.4310727]
+>> This movie was the worst. I can't believe people were paid to make this thing. Everything about it made me want to die. 
+
+ Sentiment Rating: [-3.0919816]
+
+ Sarcasm Rating: [-2.126564]
+>> I want my money back
+
+ Sentiment Rating: [0.04182438]
+
+ Sarcasm Rating: [-2.1774821]
+>> Kinda cringe ngl
+
+ Sentiment Rating: [-0.00134205]
+
+ Sarcasm Rating: [-0.11452328]
+>> I hate myself 
+
+ Sentiment Rating: [0.11272739]
+
+ Sarcasm Rating: [-2.0271976]
+>> 
+I really love my wife 2021-12-09 16:18:20.560512: W tensorflow/core/framework/op_kernel.cc:1745] OP_REQUIRES failed at strided_slice_op.cc:108 : INVALID_ARGUMENT: slice index 0 of dimension 0 out of bounds.
+>> I really love my wife 
+
+ Sentiment Rating: [0.3359525]
+
+ Sarcasm Rating: [5.224584]
+
+ Sentiment rating after Sarcasm Detection: [-1.7552121]
+>> Everything in my life is going well right now. I feel really fulfilled. 
+
+ Sentiment Rating: [0.7591616]
+
+ Sarcasm Rating: [-0.3659209]
+>> I don't know what that means
+
+ Sentiment Rating: [-0.06384953]
+
+ Sarcasm Rating: [-1.3095453]
+>> Wow, could your loss graph get any higher? 
+
+ Sentiment Rating: [-0.18241794]
+
+ Sarcasm Rating: [0.9602834]
+
+ Sentiment rating after Sarcasm Detection: [0.17517292]
+>> I actually look forward to long lines in the Ratty. It's really the highlight of my day. 
+
+ Sentiment Rating: [-1.1332382]
+
+ Sarcasm Rating: [1.3714421]
+
+ Sentiment rating after Sarcasm Detection: [1.5541705]
+
+	Twitter Dataset with Sarcasm 
+
+>> I'm really in love with the characters in this movie. It's amazing what the director was able to do with the cinematic design. Truly revolutionary. 
+
+ Sentiment Rating: [3.113614]
+
+ Sarcasm Rating: [2.3260448]
+
+ Sentiment rating after Sarcasm Detection: [-7.242406]
+>> This movie was the worst. I can't believe people were paid to make this thing. Everything about it made me want to die. 
+
+ Sentiment Rating: [-1.7369227]
+
+ Sarcasm Rating: [-2.126564]
+>> I want my money back
+
+ Sentiment Rating: [-2.4470055]
+
+ Sarcasm Rating: [-2.1774821]
+>> Kinda cringe ngl
+
+ Sentiment Rating: [-0.25000736]
+
+ Sarcasm Rating: [-0.11452328]
+>> I hate myself 
+
+ Sentiment Rating: [-1.5956541]
+
+ Sarcasm Rating: [-2.0271976]
+>> I really love my wife 
+
+ Sentiment Rating: [1.202735]
+
+ Sarcasm Rating: [2.3401244]
+
+ Sentiment rating after Sarcasm Detection: [-2.8145494]
+>> Everything in my life is going well right now. I feel really fulfilled
+
+ Sentiment Rating: [-0.5966514]
+
+ Sarcasm Rating: [-0.3659209]
+>> I don't know what that means
+
+ Sentiment Rating: [-1.3968513]
+
+ Sarcasm Rating: [-1.3095453]
+>> Wow, could your loss graph get any higher? 
+
+ Sentiment Rating: [0.6610566]
+
+ Sarcasm Rating: [0.9602834]
+
+ Sentiment rating after Sarcasm Detection: [-0.6348017]
+>> I actually look forward to long lines in the Ratty. It's really the highlight of my day. 
+
+ Sentiment Rating: [1.2794229]
+
+ Sarcasm Rating: [1.3714421]
+
+ Sentiment rating after Sarcasm Detection: [-1.7546544]
+
