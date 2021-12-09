@@ -1,13 +1,34 @@
 # Sentiment-Analyzer
-Update download.sh so that it works on the link in the file
+Also a sarcasm detector now
 
-## Plan
-Dataset to use is Sentiment140, 1.6 million tweets each tagged with a sentiment 0-4
+Different models to train
+- IMDB movie review based sentiment analysis (either positive or negative) 
+    - Run with option flag '--type imdb'
+- Twitter Sentiment140 based sentiment analysis (either positive or negative) 
+    - Run with option flag '--type twitter'
+- Twitter sarcasm detection (either sarcastic or not)
+    - Run with option flag '--type sarcasm'    
 
-Stages (Do not need to complete all, especially last 3)
- - [ ] Create model (most likely LSTM) that trains and tests on dataset
- - [ ] Add visualization methods to model (Loss graph, Accuracy Graph, Validation loss/accuracy, Testing examples, etc.)
- - [ ] Fine tune model and record effects of changing hyperparameters, preprocessing methods, and training methods 
- - [ ] Link model to twitter bot that you can tweet at and it will respond with the sentiment 
- - [ ] Experiment with alternative models on the same dataset
- - [ ] Add generative model that from the given sentiment and context will generate a response 
+Ways to run repl
+- Pure sarcasm detection 
+    - Run with option flag '--use_sarcasm'
+- Sentiment analysis without sarcasm detection
+    - Specify dataset to be run with using '--type [imdb or twitter]'
+- Sentiment analysis with sarcasm detection (If sarcasm is detected, sentiment is flipped)
+    - Run with option flag '--use_sarcasm' and '--type [imdb or twitter]'
+
+## Datasets
+* Elaborate more on these 
+Below are the datasets used 
+IMDB
+Sentiment140, 1.6 million tweets each tagged with a sentiment 0-4
+Sarcasm on Reddit -
+https://www.kaggle.com/danofer/sarcasm?select=test-balanced.csv
+Just download train-balanced-sarcasm.csv
+
+IDK if we need to setup a download.sh for this one lol
+If we do we will need to upload the file itself to some cloud service 
+
+## Setup
+
+## How to run
