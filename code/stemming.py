@@ -67,6 +67,6 @@ def preprocess(source, target, label, text, denom):
     print(end - start)
     print("Done!")
 
-# Only works with Sentiment 140 dataset
 if __name__ == "__main__":
-    preprocess("../training.1600000.processed.noemoticon.csv", "../testdata.manual.2009.06.14.csv", "../train_preprocessed.csv", "../test_preprocessed.csv")
+    pass
+    # preprocess(<data>, <name of new csv>, label_column, text_column, denominator)
