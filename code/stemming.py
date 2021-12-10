@@ -47,28 +47,21 @@ def create_sentence(sentence):
     return " ".join(line)
 
 '''
-Function to preprocess the Sentiment 140 dataset
+Function to preprocess the dataset
 '''
-def preprocess(train_path, test_path, train_csv, test_csv):
+def preprocess(source, target, label, text, denom):
     start = time.time()
     print("Starting preprocessing...")
 
-    train_df = pd.read_csv(train_path, header=None, usecols=[0, 5], encoding='latin-1')
-    test_df = pd.read_csv(test_path, header=None, usecols=[0, 5], encoding='latin-1')
+    df = pd.read_csv(source, header=None, usecols=[label, text], encoding='latin-1')
+    df.dropna(subset=[text])
 
-    with open(train_csv, "w", newline='') as f:
+    with open(target, "w", newline='') as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        for _, row in train_df.iterrows():
-            sentence = create_sentence(row[5])
+        for _, row in df.iterrows():
+            sentence = create_sentence(row[text])
             if len(sentence) != 0:
-                writer.writerow([row[0], sentence])
-
-    with open(test_csv, "w", newline='') as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        for _, row in test_df.iterrows():
-            sentence = create_sentence(row[5])
-            if len(sentence) != 0:
-                writer.writerow([row[0], sentence])
+                writer.writerow([row[label] // denom, sentence])
 
     end = time.time()
     print(end - start)

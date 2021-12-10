@@ -62,13 +62,13 @@ def get_sarcasm_data():
     hp.LABEL_IDX = 0
     hp.INPUT_IDX = 1
     hp.DENOM = 1
-    return get_data("../train-balanced-sarcasm.csv", 1010825)
+    return get_data("../data/sarcasm_min.csv", 1010825)
 
 def get_twitter_data():
     hp.LABEL_IDX = 0
-    hp.INPUT_IDX = 5
+    hp.INPUT_IDX = 1
     hp.DENOM = 4
-    return get_data("../training.1600000.processed.noemoticon.csv", 1600000)
+    return get_data("../data/sentiment_min.csv", 1600000)
 
 if __name__ == "__main__":
     get_sarcasm_data()
