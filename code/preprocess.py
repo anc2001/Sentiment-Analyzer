@@ -26,19 +26,20 @@ def get_data(train_path, n):
 
     # Text vectorization - abstracts away having to create a vocabulary and turning text into indices
     encoder = tf.keras.layers.TextVectorization(max_tokens=hp.VOCAB_SIZE)
-    encoder.adapt(train_df[hp.INPUT_IDX])
+    encoder.adapt(np.asarray(train_df[hp.INPUT_IDX]).astype('<U3'))
 
-    train_data = np.array(train_df[hp.INPUT_IDX])
-    train_label = np.array(train_df[hp.LABEL_IDX ] / hp.DENOM)
-    test_data = np.array(test_df[hp.INPUT_IDX])
-    test_label = np.array(test_df[hp.LABEL_IDX ] / hp.DENOM)
-    validation = (validation_df[hp.INPUT_IDX], validation_df[hp.LABEL_IDX] / hp.DENOM)
+    train_data = np.asarray(train_df[hp.INPUT_IDX]).astype('<U3')
+    train_label = np.asarray(train_df[hp.LABEL_IDX]).astype(int) / hp.DENOM
+    test_data = np.asarray(test_df[hp.INPUT_IDX]).astype('<U3')
+    test_label = np.asarray(test_df[hp.LABEL_IDX]).astype(int) / hp.DENOM
+    validation = (np.asarray(validation_df[hp.INPUT_IDX]).astype('<U3'), np.asarray(validation_df[hp.LABEL_IDX]).astype(int) / hp.DENOM)
 
     return (train_data, train_label, test_data, test_label, validation, encoder)
 
 # Splits large training dataset into testing and validation sets
 def split_data(data, skip):
     train = pd.read_csv(data, header=None, usecols=[hp.LABEL_IDX, hp.INPUT_IDX], encoding='latin-1', skiprows=skip)
+    train = train.drop(0)
     test = train.sample(frac=0.05)
     train = train.drop(test.index)
     validation = train.sample(frac=0.05)

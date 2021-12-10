@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 from preprocess import get_twitter_data, get_imdb_data, get_sarcasm_data
 from lstm_model import LSTM_Model
+from holding_hands import Together_Model
 import hyperparameters as hp
 from matplotlib import pyplot as plt
 import os.path
@@ -11,7 +12,7 @@ import pickle
 def parseArguments():
     parser = argparse.ArgumentParser()
     #Options are imdb, sentiment140
-    parser.add_argument("--type", type=str, choices=["imdb", "twitter", "sarcasm", "twitter_sarcasm"], default="imdb") 
+    parser.add_argument("--type", type=str, choices=["imdb", "twitter", "sarcasm"], default="imdb") 
     parser.add_argument("--model_type", type=str, default="lstm")
     args = parser.parse_args()
     return args 
@@ -112,7 +113,7 @@ def train_twitter():
     save_weights(model, "twitter")
 
 def train_sarcasm():
-    (train_data, train_label, test_data, test_label, validation, encoder) = get_twitter_data()
+    (train_data, train_label, test_data, test_label, validation, encoder) = get_sarcasm_data()
     model = LSTM_Model(encoder)
     model.model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
             optimizer=tf.keras.optimizers.Adam(1e-4),
@@ -126,6 +127,31 @@ def train_sarcasm():
     visualize_training(history, "sarcasm_dataset.png")
     save_encoder(encoder, "sarcasm_encoder.pkl")
     save_weights(model, "sarcasm")
+
+def train_sentiment_with_sarcasm():
+    (train_data, train_label, test_data, test_label, validation, encoder) = get_twitter_data()
+    encoder = load_encoder("twitter_encoder.pkl")
+    sentiment_model = LSTM_Model(encoder)
+    sentiment_model = load_weights(sentiment_model, "twitter")
+    
+    encoder = load_encoder("sarcasm_encoder.pkl")
+    sarcasm_model = LSTM_Model(encoder)
+    sarcasm_model = load_weights(sarcasm_model, "sarcasm")
+
+    model = Together_Model(sentiment_model, sarcasm_model)
+
+    model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+            optimizer=tf.keras.optimizers.Adam(1e-4),
+            metrics=['accuracy'])
+    
+    history = model.fit(train_data, train_label, epochs=hp.EPOCHS, batch_size=hp.BATCH_SIZE,
+            validation_data=validation,
+            validation_steps=30) 
+    test_loss, test_acc = model.evaluate(test_data, test_label)
+    print('Test Loss:', test_loss)
+    print('Test Accuracy:', test_acc)
+    visualize_training(history, "together.png")
+    save_weights(model, "together")
 
 def main(args):
     if args.type == "imdb":
